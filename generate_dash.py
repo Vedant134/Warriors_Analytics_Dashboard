@@ -194,7 +194,7 @@ def main():
         'name': 'Minutes Allocation',
         'categories': ['Dashboard', 0, 26, 4, 26],
         'values': ['Data', 1, 2, 5, 2],
-        'data_labels': {'percentage': True, 'position': 'outside_end'}
+        'data_labels': {'percentage': True}
     })
     chart_doughnut.set_title({'name': '4. Minutes Reliance (Top 5 Units)', 'name_font': {'size': 12}})
     chart_doughnut.set_legend({'position': 'right', 'font': {'size': 8}})
