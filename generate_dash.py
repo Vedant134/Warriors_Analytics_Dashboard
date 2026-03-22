@@ -72,42 +72,58 @@ def main():
     # Executive Insights Formats
     panel_header_fmt = workbook.add_format({'bold': True, 'font_size': 14, 'bg_color': '#1f497d', 'font_color': 'white', 'align': 'center', 'valign': 'vcenter', 'border': 1})
     panel_body_fmt = workbook.add_format({'font_size': 11, 'bg_color': '#FFFFFF', 'text_wrap': True, 'valign': 'top', 'border': 1})
+    panel_body_fmt.set_align('left')
     
-    # Apply background
-    for r in range(0, 50):
+    # Apply background up to row 55
+    for r in range(0, 56):
         worksheet.set_row(r, 15, bg_format)
     
+    # Set specific row heights
     worksheet.set_row(0, 15)
     worksheet.set_row(1, 20)
     worksheet.set_row(2, 15)
-    
-    # Draw KPI cards
-    worksheet.merge_range('B6:D6', 'PEAK NET RATING', kpi_title_fmt)
-    worksheet.merge_range('B7:D8', f"+{best_net}", kpi_val_fmt)
-    worksheet.merge_range('B9:D9', 'Top Performing Lineup', kpi_sub_fmt)
-    
-    worksheet.merge_range('F6:H6', 'PEAK OFFENSIVE RATING', kpi_title_fmt)
-    worksheet.merge_range('F7:H8', str(best_off), kpi_val_fmt)
-    worksheet.merge_range('F9:H9', 'Highest Scoring Output', kpi_sub_fmt)
-    
-    worksheet.merge_range('J6:L6', 'PEAK TRUE SHOOTING %', kpi_title_fmt)
-    worksheet.merge_range('J7:L8', f"{best_ts}%", kpi_val_fmt)
-    worksheet.merge_range('J9:L9', 'Most Efficient Lineup', kpi_sub_fmt)
-    
     worksheet.set_row(6, 30) # Middle row for KPI values
     worksheet.set_row(7, 30)
     
-    # Executive Insights Panel (O6:S42 -> no let's put it on the right from column N)
-    worksheet.merge_range('A2:R4', '24-25 Warriors Key Insights Post-Butler Trade', title_format)
-    worksheet.merge_range('N6:R6', 'EXECUTIVE INSIGHTS', panel_header_fmt)
+    # Set proportional column widths to prevent overlap
+    worksheet.set_column('A:A', 2)     # left margin
+    worksheet.set_column('B:G', 11)    # 6 cols * 82px = 492px
+    worksheet.set_column('H:H', 2)     # padding
+    worksheet.set_column('I:N', 11)    # 6 cols * 82px = 492px
+    worksheet.set_column('O:O', 2)     # padding
+    worksheet.set_column('P:U', 11)    # 6 cols * 82px = 492px
+    worksheet.set_column('V:V', 2)     # right margin
     
-    panel_text = f"\n\n1. {insight_1}\n\n\n2. {insight_2}\n\n\n3. {insight_3}"
-    worksheet.merge_range('N7:R42', panel_text, panel_body_fmt)
-    
-    # Add charts
+    # Add charts data (hidden)
     worksheet.write_column('AA1', top5['Display_Lineups'])
+    worksheet.set_column('AA:AA', 0) # hide helper
     
-    # Chart 1: Net Rating (A11)
+    # Title
+    worksheet.merge_range('B2:U4', '24-25 Warriors Key Insights Post-Butler Trade', title_format)
+    
+    # Draw KPI cards
+    worksheet.merge_range('B6:G6', 'PEAK NET RATING', kpi_title_fmt)
+    worksheet.merge_range('B7:G8', f"+{best_net}", kpi_val_fmt)
+    worksheet.merge_range('B9:G9', 'Top Performing Lineup', kpi_sub_fmt)
+    
+    worksheet.merge_range('I6:N6', 'PEAK OFFENSIVE RATING', kpi_title_fmt)
+    worksheet.merge_range('I7:N8', str(best_off), kpi_val_fmt)
+    worksheet.merge_range('I9:N9', 'Highest Scoring Output', kpi_sub_fmt)
+    
+    worksheet.merge_range('P6:U6', 'PEAK TRUE SHOOTING %', kpi_title_fmt)
+    worksheet.merge_range('P7:U8', f"{best_ts}%", kpi_val_fmt)
+    worksheet.merge_range('P9:U9', 'Most Efficient Lineup', kpi_sub_fmt)
+    
+    # Executive Insights Panel
+    worksheet.merge_range('P12:U12', 'EXECUTIVE INSIGHTS', panel_header_fmt)
+    panel_text = f"\n\n1. {insight_1}\n\n\n2. {insight_2}\n\n\n3. {insight_3}"
+    worksheet.merge_range('P13:U51', panel_text, panel_body_fmt)
+    
+    # Chart dimensions
+    c_width = 480
+    c_height = 280
+    
+    # Chart 1: Net Rating (B12)
     chart1 = workbook.add_chart({'type': 'bar'})
     chart1.add_series({
         'name': 'Net Rating',
@@ -116,13 +132,14 @@ def main():
         'fill': {'color': '#0070C0'},
         'data_labels': {'value': True, 'position': 'outside_end'}
     })
-    chart1.set_title({'name': 'Net Rating Comparison'})
+    chart1.set_title({'name': 'Net Rating Comparison', 'name_font': {'size': 12}})
     chart1.set_legend({'none': True})
-    chart1.set_chartarea({'border': {'color': '#D9D9D9'}})
-    chart1.set_size({'width': 380, 'height': 250})
-    worksheet.insert_chart('A12', chart1)
+    chart1.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
+    chart1.set_plotarea({'fill': {'color': '#FFFFFF'}})
+    chart1.set_size({'width': c_width, 'height': c_height})
+    worksheet.insert_chart('B12', chart1)
     
-    # Chart 2: Off vs Def (G11)
+    # Chart 2: Off vs Def (I12)
     chart2 = workbook.add_chart({'type': 'column'})
     chart2.add_series({
         'name': 'OffRtg',
@@ -136,13 +153,14 @@ def main():
         'values': ['Data', 1, 4, 5, 4],
         'fill': {'color': '#C00000'}
     })
-    chart2.set_title({'name': 'Offensive vs Defensive Rating'})
+    chart2.set_title({'name': 'Offensive vs Defensive Rating', 'name_font': {'size': 12}})
     chart2.set_legend({'position': 'bottom'})
-    chart2.set_chartarea({'border': {'color': '#D9D9D9'}})
-    chart2.set_size({'width': 380, 'height': 250})
-    worksheet.insert_chart('G12', chart2)
+    chart2.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
+    chart2.set_plotarea({'fill': {'color': '#FFFFFF'}})
+    chart2.set_size({'width': c_width, 'height': c_height})
+    worksheet.insert_chart('I12', chart2)
     
-    # Chart 3: TS% (A27)
+    # Chart 3: TS% (B33)
     chart3 = workbook.add_chart({'type': 'column'})
     chart3.add_series({
         'name': 'TS%',
@@ -150,13 +168,14 @@ def main():
         'values': ['Data', 1, 9, 5, 9],
         'fill': {'color': '#00B050'}
     })
-    chart3.set_title({'name': 'True Shooting Percentage (TS%)'})
+    chart3.set_title({'name': 'True Shooting Percentage (TS%)', 'name_font': {'size': 12}})
     chart3.set_legend({'none': True})
-    chart3.set_chartarea({'border': {'color': '#D9D9D9'}})
-    chart3.set_size({'width': 380, 'height': 250})
-    worksheet.insert_chart('A29', chart3)
+    chart3.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
+    chart3.set_plotarea({'fill': {'color': '#FFFFFF'}})
+    chart3.set_size({'width': c_width, 'height': c_height})
+    worksheet.insert_chart('B33', chart3)
     
-    # Chart 4: eFG% (G27)
+    # Chart 4: eFG% (I33)
     chart4 = workbook.add_chart({'type': 'bar'})
     chart4.add_series({
         'name': 'eFG%',
@@ -164,15 +183,12 @@ def main():
         'values': ['Data', 1, 8, 5, 8],
         'fill': {'color': '#7030A0'}
     })
-    chart4.set_title({'name': 'Effective Field Goal Percentage (eFG%)'})
+    chart4.set_title({'name': 'Effective Field Goal Percentage (eFG%)', 'name_font': {'size': 12}})
     chart4.set_legend({'none': True})
-    chart4.set_chartarea({'border': {'color': '#D9D9D9'}})
-    chart4.set_size({'width': 380, 'height': 250})
-    worksheet.insert_chart('G29', chart4)
-    
-    # Resize cols for consistent spacing
-    worksheet.set_column('A:T', 7)
-    worksheet.set_column('AA:AA', 0) # hide helper
+    chart4.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
+    chart4.set_plotarea({'fill': {'color': '#FFFFFF'}})
+    chart4.set_size({'width': c_width, 'height': c_height})
+    worksheet.insert_chart('I33', chart4)
     
     writer.close()
     
