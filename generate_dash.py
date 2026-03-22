@@ -26,8 +26,10 @@ def main():
     top5 = df.sort_values(by='NetRtg', ascending=False).head(5).copy()
     top5 = top5.reset_index(drop=True)
     
-    # Ensure Lineups are shorter for charts (e.g. replacing ' | ' with '\n')
-    top5['Display_Lineups'] = top5['Lineups'].str.replace(' | ', '\n', regex=False)
+    # Ensure Lineups are shorter for charts (e.g. grabbing last names only)
+    def get_last_names(lineup_str):
+        return ', '.join([p.split()[-1] if p.split()[-1] not in ['Jr.', 'III', 'II', 'Sr.'] else p.split()[-2] for p in lineup_str.split(' | ')])
+    top5['Display_Lineups'] = top5['Lineups'].apply(get_last_names)
     
     # 3. Generate Insights / KPIs
     best_lineup = top5.iloc[0]['Lineups']
@@ -129,7 +131,8 @@ def main():
         'name': 'Minutes Played',
         'categories': ['Dashboard', 0, 26, 4, 26],
         'values': ['Data', 1, 2, 5, 2],
-        'fill': {'color': '#0F243E'}
+        'fill': {'color': '#0F243E'},
+        'vary_colors': True
     })
     line_chart = workbook.add_chart({'type': 'line'})
     line_chart.add_series({
@@ -142,10 +145,11 @@ def main():
     })
     chart_combo.combine(line_chart)
     chart_combo.set_title({'name': '1. Lineup Volume vs. Efficiency (Dual Axis)', 'name_font': {'size': 12}})
-    chart_combo.set_legend({'position': 'top'})
+    chart_combo.set_legend({'position': 'bottom', 'font': {'size': 8}})
     chart_combo.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
     chart_combo.set_plotarea({'fill': {'color': '#FFFFFF'}})
     chart_combo.set_size({'width': c_width, 'height': c_height})
+    chart_combo.show_hidden_data()
     worksheet.insert_chart('B12', chart_combo)
     
     # Chart 2: Scatter Plot (OffRtg vs DefRtg) (I12)
@@ -165,6 +169,7 @@ def main():
     chart_scatter.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
     chart_scatter.set_plotarea({'fill': {'color': '#FFFFFF'}})
     chart_scatter.set_size({'width': c_width, 'height': c_height})
+    chart_scatter.show_hidden_data()
     worksheet.insert_chart('I12', chart_scatter)
     
     # Chart 3: Area Chart (Shooting Dynamics) (B33)
@@ -182,10 +187,11 @@ def main():
         'fill': {'color': '#7030A0', 'transparency': 50}
     })
     chart_area.set_title({'name': '3. Shooting Efficiency Dynamics', 'name_font': {'size': 12}})
-    chart_area.set_legend({'position': 'top'})
+    chart_area.set_legend({'position': 'bottom', 'font': {'size': 8}})
     chart_area.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
     chart_area.set_plotarea({'fill': {'color': '#FFFFFF'}})
     chart_area.set_size({'width': c_width, 'height': c_height})
+    chart_area.show_hidden_data()
     worksheet.insert_chart('B33', chart_area)
     
     # Chart 4: Doughnut Chart (Minutes Allocation) (I33)
@@ -197,10 +203,11 @@ def main():
         'data_labels': {'percentage': True}
     })
     chart_doughnut.set_title({'name': '4. Minutes Reliance (Top 5 Units)', 'name_font': {'size': 12}})
-    chart_doughnut.set_legend({'position': 'right', 'font': {'size': 8}})
+    chart_doughnut.set_legend({'position': 'bottom', 'font': {'size': 8}})
     chart_doughnut.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
     chart_doughnut.set_plotarea({'fill': {'color': '#FFFFFF'}})
     chart_doughnut.set_size({'width': c_width, 'height': c_height})
+    chart_doughnut.show_hidden_data()
     worksheet.insert_chart('I33', chart_doughnut)
     
     writer.close()
