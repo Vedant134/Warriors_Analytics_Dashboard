@@ -1,6 +1,6 @@
 # Warriors Dashboard Analyzer
 
-This data project analyzes Golden State Warriors personnel data to identify elite lineup combinations following the Butler trade. It features a fully automated Python pipeline that ingests raw CSV matchup data, strips out unnecessary metrics, cleanly filters the noise, and algorithmically determines the highest performing groupings using advanced NBA stats like Net Rating, True Shooting %, and Offensive/Defensive Ratings.
+This data project analyzes Golden State Warriors personnel data to identify elite lineup combinations following the Butler trade. It features a Python pipeline that ingests raw CSV matchup data, strips out unnecessary metrics, cleanly filters the noise, and algorithmically determines the highest performing groupings using advanced NBA stats like Net Rating, True Shooting %, and Offensive/Defensive Ratings.
 
 ## Key Project Deliverables
 
@@ -14,10 +14,10 @@ This data project analyzes Golden State Warriors personnel data to identify elit
    A structured 1-page document summarizing project methodology, ETL data hygiene steps, the precise algorithmic insights generated, and a breakdown of the dashboard elements cleanly presented in a tabular and bulleted corporate format.
 
 ## Technology Stack
-- **Python**: Core logic.
-- **Pandas**: Fast and powerful dataframe filtering and data cleansing.
-- **XlsxWriter**: Advanced automated Excel generation, programmatic chart binding, and cell formatting.
-- **ReportLab**: PDF document generation, custom paragraph layouts, and strict graphical precision. 
+- **Python**
+- **Pandas**
+- **XlsxWriter**.
+- **ReportLab**
 
 ## How To Run
 Running the primary script executes the entire data pipeline and produces the Excel and PDF outputs cleanly:
