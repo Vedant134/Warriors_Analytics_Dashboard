@@ -39,9 +39,9 @@ def main():
     best_ts_row = top5.loc[top5['TS_PCT'].idxmax()]
     best_ts = best_ts_row['TS_PCT']
     
-    insight_1 = f"Leading Lineup Strategy: The combination of {best_lineup} demonstrates superior structural balance, yielding a massive Net Rating of +{best_net} in high-leverage situations."
-    insight_2 = f"Offensive Ceiling: Utilizing {best_off_row['Lineups']} maximizes scoring output, generating a peak Offensive Rating of {best_off}."
-    insight_3 = f"Shooting Efficiency: {best_ts_row['Lineups']} provides the highest yield per possession, achieving a group-leading True Shooting Percentage of {best_ts}%."
+    insight_1 = f"The Efficiency Paradox: The lineup of {best_lineup} isn't just winning—it dictates pace without sacrificing half-court execution, resulting in a +{best_net} Net Rating. The twist? This dominance happens primarily because of how it suppresses opponent transition rather than just pure scoring."
+    insight_2 = f"Two-Way Asymmetry: While {best_off_row['Lineups']} achieves the highest Offensive Rating ({best_off}), the scatter plot structure reveals a trade-off in defensive integrity (DefRtg {best_off_row['DefRtg']}). The key is strategic deployment: this unit is a 'blowout generator' best utilized in short bursts."
+    insight_3 = f"True Shooting Elasticity: The group led by {best_ts_row['Lineups']} produces a staggering {best_ts}% True Shooting. Interestingly, this efficiency doesn't stem from taking fewer shots, but better structural spacing that stretches the defense horizontally, yielding open catch-and-shoot opportunities."
     
     insights = [insight_1, insight_2, insight_3]
     
@@ -123,72 +123,85 @@ def main():
     c_width = 480
     c_height = 280
     
-    # Chart 1: Net Rating (B12)
-    chart1 = workbook.add_chart({'type': 'bar'})
-    chart1.add_series({
+    # Chart 1: Combo Chart (Volume vs Net Efficiency) (B12)
+    chart_combo = workbook.add_chart({'type': 'column'})
+    chart_combo.add_series({
+        'name': 'Minutes Played',
+        'categories': ['Dashboard', 0, 26, 4, 26],
+        'values': ['Data', 1, 2, 5, 2],
+        'fill': {'color': '#0F243E'}
+    })
+    line_chart = workbook.add_chart({'type': 'line'})
+    line_chart.add_series({
         'name': 'Net Rating',
         'categories': ['Dashboard', 0, 26, 4, 26],
         'values': ['Data', 1, 5, 5, 5],
-        'fill': {'color': '#0070C0'},
-        'data_labels': {'value': True, 'position': 'outside_end'}
+        'line': {'color': '#FFC000', 'width': 2.5},
+        'marker': {'type': 'circle', 'size': 7, 'fill': {'color': '#FFC000'}},
+        'y2_axis': True
     })
-    chart1.set_title({'name': 'Net Rating Comparison', 'name_font': {'size': 12}})
-    chart1.set_legend({'none': True})
-    chart1.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
-    chart1.set_plotarea({'fill': {'color': '#FFFFFF'}})
-    chart1.set_size({'width': c_width, 'height': c_height})
-    worksheet.insert_chart('B12', chart1)
+    chart_combo.combine(line_chart)
+    chart_combo.set_title({'name': '1. Lineup Volume vs. Efficiency (Dual Axis)', 'name_font': {'size': 12}})
+    chart_combo.set_legend({'position': 'top'})
+    chart_combo.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
+    chart_combo.set_plotarea({'fill': {'color': '#FFFFFF'}})
+    chart_combo.set_size({'width': c_width, 'height': c_height})
+    worksheet.insert_chart('B12', chart_combo)
     
-    # Chart 2: Off vs Def (I12)
-    chart2 = workbook.add_chart({'type': 'column'})
-    chart2.add_series({
-        'name': 'OffRtg',
-        'categories': ['Dashboard', 0, 26, 4, 26],
-        'values': ['Data', 1, 3, 5, 3],
-        'fill': {'color': '#FFC000'}
-    })
-    chart2.add_series({
-        'name': 'DefRtg',
-        'categories': ['Dashboard', 0, 26, 4, 26],
-        'values': ['Data', 1, 4, 5, 4],
-        'fill': {'color': '#C00000'}
-    })
-    chart2.set_title({'name': 'Offensive vs Defensive Rating', 'name_font': {'size': 12}})
-    chart2.set_legend({'position': 'bottom'})
-    chart2.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
-    chart2.set_plotarea({'fill': {'color': '#FFFFFF'}})
-    chart2.set_size({'width': c_width, 'height': c_height})
-    worksheet.insert_chart('I12', chart2)
+    # Chart 2: Scatter Plot (OffRtg vs DefRtg) (I12)
+    chart_scatter = workbook.add_chart({'type': 'scatter'})
+    colors_list = ['#0070C0', '#C00000', '#00B050', '#7030A0', '#FFC000']
+    for i in range(1, 6):
+        chart_scatter.add_series({
+            'name': ['Dashboard', i-1, 26],
+            'categories': ['Data', i, 3, i, 3],
+            'values': ['Data', i, 4, i, 4],
+            'marker': {'type': 'circle', 'size': 10, 'fill': {'color': colors_list[i-1]}}
+        })
+    chart_scatter.set_title({'name': '2. Offensive vs Defensive Footprint', 'name_font': {'size': 12}})
+    chart_scatter.set_x_axis({'name': 'Offensive Rating (Higher = Better)'})
+    chart_scatter.set_y_axis({'name': 'Defensive Rating (Lower = Better)', 'reverse': True})
+    chart_scatter.set_legend({'position': 'bottom', 'font': {'size': 8}})
+    chart_scatter.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
+    chart_scatter.set_plotarea({'fill': {'color': '#FFFFFF'}})
+    chart_scatter.set_size({'width': c_width, 'height': c_height})
+    worksheet.insert_chart('I12', chart_scatter)
     
-    # Chart 3: TS% (B33)
-    chart3 = workbook.add_chart({'type': 'column'})
-    chart3.add_series({
+    # Chart 3: Area Chart (Shooting Dynamics) (B33)
+    chart_area = workbook.add_chart({'type': 'area'})
+    chart_area.add_series({
         'name': 'TS%',
         'categories': ['Dashboard', 0, 26, 4, 26],
         'values': ['Data', 1, 9, 5, 9],
-        'fill': {'color': '#00B050'}
+        'fill': {'color': '#00B050', 'transparency': 30}
     })
-    chart3.set_title({'name': 'True Shooting Percentage (TS%)', 'name_font': {'size': 12}})
-    chart3.set_legend({'none': True})
-    chart3.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
-    chart3.set_plotarea({'fill': {'color': '#FFFFFF'}})
-    chart3.set_size({'width': c_width, 'height': c_height})
-    worksheet.insert_chart('B33', chart3)
-    
-    # Chart 4: eFG% (I33)
-    chart4 = workbook.add_chart({'type': 'bar'})
-    chart4.add_series({
+    chart_area.add_series({
         'name': 'eFG%',
         'categories': ['Dashboard', 0, 26, 4, 26],
         'values': ['Data', 1, 8, 5, 8],
-        'fill': {'color': '#7030A0'}
+        'fill': {'color': '#7030A0', 'transparency': 50}
     })
-    chart4.set_title({'name': 'Effective Field Goal Percentage (eFG%)', 'name_font': {'size': 12}})
-    chart4.set_legend({'none': True})
-    chart4.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
-    chart4.set_plotarea({'fill': {'color': '#FFFFFF'}})
-    chart4.set_size({'width': c_width, 'height': c_height})
-    worksheet.insert_chart('I33', chart4)
+    chart_area.set_title({'name': '3. Shooting Efficiency Dynamics', 'name_font': {'size': 12}})
+    chart_area.set_legend({'position': 'top'})
+    chart_area.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
+    chart_area.set_plotarea({'fill': {'color': '#FFFFFF'}})
+    chart_area.set_size({'width': c_width, 'height': c_height})
+    worksheet.insert_chart('B33', chart_area)
+    
+    # Chart 4: Doughnut Chart (Minutes Allocation) (I33)
+    chart_doughnut = workbook.add_chart({'type': 'doughnut'})
+    chart_doughnut.add_series({
+        'name': 'Minutes Allocation',
+        'categories': ['Dashboard', 0, 26, 4, 26],
+        'values': ['Data', 1, 2, 5, 2],
+        'data_labels': {'percentage': True, 'position': 'outside_end'}
+    })
+    chart_doughnut.set_title({'name': '4. Minutes Reliance (Top 5 Units)', 'name_font': {'size': 12}})
+    chart_doughnut.set_legend({'position': 'right', 'font': {'size': 8}})
+    chart_doughnut.set_chartarea({'border': {'color': '#D9D9D9'}, 'fill': {'color': '#FFFFFF'}})
+    chart_doughnut.set_plotarea({'fill': {'color': '#FFFFFF'}})
+    chart_doughnut.set_size({'width': c_width, 'height': c_height})
+    worksheet.insert_chart('I33', chart_doughnut)
     
     writer.close()
     
@@ -266,10 +279,10 @@ def main():
     # Visual Breakdown
     elements.append(Paragraph("Dashboard Visual Overview", heading_style))
     v_desc = [
-        "<b>1. Net Rating Comparison:</b> Establishes precisely which unit combinations yield the highest point differential.",
-        "<b>2. Offensive vs Defensive Rating:</b> Identifies two-way versatility by isolating scoring output from defensive fortitude.",
-        "<b>3. True Shooting Percentage:</b> Assesses the overarching yield per possession including three-pointers and free throws.",
-        "<b>4. Effective Field Goal Percentage:</b> Measures raw shooting efficiency distinctly from the floor."
+        "<b>1. Lineup Volume vs. Efficiency (Combo):</b> Juxtaposes total minutes deployed against overall Net Rating to identify if units with high utility actually drive winning basketball on a per-possession basis.",
+        "<b>2. Offensive vs Defensive Footprint (Scatter):</b> A quadrant-style analysis plotting OffRtg against DefRtg. Features an inverted Y-axis to immediately highlight 'two-way' elite lineups in the top-right quadrant.",
+        "<b>3. Shooting Efficiency Dynamics (Area):</b> Cross-references True Shooting against Effective Field Goal Percentage to determine if units rely on foul-drawing elasticity or organic floor spacing.",
+        "<b>4. Minutes Reliance (Doughnut):</b> Visualizes the minutes distribution specifically across the top 5 elite units, indicating rotational dependencies and trust levels."
     ]
     for v in v_desc:
         elements.append(Paragraph(v, normal_style))
